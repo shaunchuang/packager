@@ -267,6 +267,63 @@
     }
   };
 
+  const saveAsHTML = async () => {
+    resetResult();
+    
+    const task = new Task();
+    const optionsClone = deepClone($options);
+    optionsClone.target = 'html';
+    
+    try {
+      task.setProgressText('正在打包為 HTML...');
+      result = await task.do(runPackager(task, optionsClone));
+      task.done();
+      
+      try {
+        // 將 HTML 內容轉換為字串
+        const htmlString = result.data instanceof Uint8Array ? 
+                          new TextDecoder('utf-8').decode(result.data) : 
+                          result.data;
+        
+        // 準備要傳送的 JSON 資料
+        const postData = {
+          filename: result.filename,
+          htmlContent: htmlString
+        };
+        
+        // 發送 POST 請求
+        const response = await fetch('http://127.0.0.1:7000/LessonProject/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        });
+        
+        if (response.ok) {
+          // 嘗試解析返回結果
+          try {
+            const responseData = await response.json();
+            alert(`成功上傳 HTML 到伺服器！${responseData.message || ''}`);
+          } catch {
+            alert(`成功上傳 HTML 到伺服器！`);
+          }
+        } else {
+          const errorText = await response.text();
+          throw new Error(`API 請求失敗: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+      } catch (err) {
+        console.error('上傳到 API 失敗:', err);
+        // 降級為下載模式
+        downloadURL(result.filename, result.url);
+        alert(`無法上傳到 API，已降級為下載模式。\n錯誤: ${err.message}`);
+      }
+    } catch (e) {
+      console.error('打包過程中出錯:', e);
+      alert(`打包失敗: ${e.message}`);
+    }
+  };
+
   onDestroy(() => {
     if (result) {
       URL.revokeObjectURL(result.url);
@@ -1081,8 +1138,11 @@
     <div class="button">
       <Button on:click={pack} text={$_('options.package')} />
     </div>
-    <div clas="button">
+    <div class="button">
       <Button on:click={preview} secondary text={$_('options.preview')} />
+    </div>
+    <div class="button">
+      <Button on:click={saveAsHTML} secondary text="輸出 HTML" />
     </div>
   </div>
 </Section>
