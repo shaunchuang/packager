@@ -1142,7 +1142,7 @@
       <Button on:click={preview} secondary text={$_('options.preview')} />
     </div>
     <div class="button">
-      <Button on:click={saveAsHTML} secondary text="輸出 HTML" />
+      <Button on:click={saveAsHTML} secondary text="匯出至教案市集平台" />
     </div>
   </div>
 </Section>
