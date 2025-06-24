@@ -292,7 +292,7 @@
         };
         
         // 發送 POST 請求
-        const response = await fetch('http://127.0.0.1:7000/LessonProject/api/upload', {
+        const response = await fetch('http://140.96.170.75:8261/LessonProject/api/upload', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
